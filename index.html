@@ -1,269 +1,557 @@
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUEST MASTER - 직업 배정 시스템</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <!-- React & Babel CDN -->
-    <script src="[https://unpkg.com/react@18/umd/react.production.min.js](https://unpkg.com/react@18/umd/react.production.min.js)"></script>
-    <script src="[https://unpkg.com/react-dom@18/umd/react-dom.production.min.js](https://unpkg.com/react-dom@18/umd/react-dom.production.min.js)"></script>
-    <script src="[https://unpkg.com/@babel/standalone/babel.min.js](https://unpkg.com/@babel/standalone/babel.min.js)"></script>
-    <!-- Lucide Icons -->
-    <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
-    <style>
-        @import url('[https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap](https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap)');
-        body { font-family: 'Pretendard', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>직업 추첨 🎲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f7f8fa;--surface:#fff;--surface2:#f0f2f5;--border:#e4e7ec;
+    --text:#111827;--text2:#6b7280;--text3:#9ca3af;
+    --accent:#2563eb;--accent-light:#eff6ff;--accent-dark:#1d4ed8;
+    --danger:#ef4444;--danger-light:#fef2f2;
+    --success:#10b981;
+    --warrior:#dc2626;--mage:#7c3aed;--archer:#059669;--rogue:#d97706;--priest:#2563eb;
+    --warrior-bg:#fef2f2;--mage-bg:#f5f3ff;--archer-bg:#ecfdf5;--rogue-bg:#fffbeb;--priest-bg:#eff6ff;
+    --radius:14px;--radius-sm:8px;
+    --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+    --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .header-logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;letter-spacing:-.3px}
+  .btn-ghost{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 14px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:var(--text2);cursor:pointer;transition:all .15s;font-weight:500}
+  .btn-ghost:hover{background:var(--surface2);color:var(--text)}
+
+  .main{max-width:480px;margin:0 auto;padding:32px 16px 60px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
+  .section-title{font-size:18px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px}
+  .section-desc{font-size:14px;color:var(--text2);margin-bottom:24px}
+
+  .form-group{margin-bottom:16px}
+  .form-label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+  .form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s}
+  .form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+
+  .btn-primary{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .15s;margin-top:8px}
+  .btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.3)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+  .result-card{text-align:center;padding:36px 28px;animation:slideUp .4s cubic-bezier(.16,1,.3,1)}
+  @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .result-emoji{font-size:64px;margin-bottom:12px;display:block;animation:pop .5s .2s both cubic-bezier(.34,1.56,.64,1)}
+  @keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+  .result-job-name{font-size:28px;font-weight:700;margin-bottom:6px;letter-spacing:-.5px}
+  .result-user{font-size:14px;color:var(--text2);margin-bottom:20px}
+  .result-desc{font-size:14px;color:var(--text2);background:var(--surface2);border-radius:var(--radius-sm);padding:14px 16px;line-height:1.7;text-align:left}
+  .result-badge{display:inline-block;padding:4px 12px;border-radius:100px;font-size:12px;font-weight:600;margin-bottom:16px;border:1.5px solid transparent}
+
+  .job-warrior{color:var(--warrior);background:var(--warrior-bg);border-color:#fecaca}
+  .job-mage   {color:var(--mage);   background:var(--mage-bg);   border-color:#ddd6fe}
+  .job-archer {color:var(--archer); background:var(--archer-bg); border-color:#a7f3d0}
+  .job-rogue  {color:var(--rogue);  background:var(--rogue-bg);  border-color:#fde68a}
+  .job-priest {color:var(--priest); background:var(--priest-bg); border-color:#bfdbfe}
+
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+  .stat-card{border-radius:var(--radius-sm);padding:16px;border:1.5px solid transparent}
+  .stat-count{font-size:28px;font-weight:700;font-family:'Space Mono',monospace;line-height:1}
+  .stat-job{font-size:13px;font-weight:500;margin-top:2px}
+
+  .table-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead{background:var(--surface2)}
+  th{padding:10px 14px;text-align:left;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+  td{padding:11px 14px;border-top:1px solid var(--border)}
+  tr:hover td{background:var(--surface2)}
+  .job-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:600;white-space:nowrap;border:1.5px solid transparent}
+
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--surface2);padding:4px;border-radius:var(--radius-sm)}
+  .tab{flex:1;padding:8px;border:none;border-radius:6px;font-size:13px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;background:none;color:var(--text2);transition:all .15s}
+  .tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+  .admin-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-light);color:var(--accent);border:1px solid #bfdbfe;border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600}
+
+  .btn-danger{padding:9px 18px;background:var(--danger);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .15s}
+  .btn-danger:hover{background:#b91c1c}
+  .btn-secondary{padding:9px 16px;background:var(--surface2);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .15s}
+  .btn-secondary:hover{background:var(--border)}
+
+  .search-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;margin-bottom:14px;transition:border-color .15s}
+  .search-input:focus{border-color:var(--accent)}
+
+  .filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .filter-btn{padding:5px 12px;border-radius:100px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text2);transition:all .15s}
+  .filter-btn.active,.filter-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--text3)}
+  .empty-icon{font-size:40px;margin-bottom:10px}
+  .empty-text{font-size:14px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#111827;color:#fff;padding:12px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;transition:transform .3s cubic-bezier(.16,1,.3,1);z-index:9999;white-space:nowrap;box-shadow:var(--shadow-lg)}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+  .modal-overlay.show{opacity:1;pointer-events:all}
+  .modal{background:var(--surface);border-radius:var(--radius);padding:28px;max-width:360px;width:100%;box-shadow:var(--shadow-lg);transform:scale(.95);transition:transform .2s cubic-bezier(.16,1,.3,1)}
+  .modal-overlay.show .modal{transform:scale(1)}
+  .modal-title{font-size:16px;font-weight:700;margin-bottom:8px}
+  .modal-desc{font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.6}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+  .btn-cancel{padding:9px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:none;font-size:14px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;color:var(--text2);font-weight:500}
+
+  .screen{display:none}
+  .screen.active{display:block}
+
+  .total-info{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--text2);margin-bottom:12px}
+  .total-count{font-weight:700;color:var(--text)}
+
+  .progress-item{margin-bottom:12px}
+  .progress-header{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+  .progress-bar-bg{height:8px;background:var(--surface2);border-radius:100px;overflow:hidden}
+  .progress-bar{height:100%;border-radius:100px;transition:width .5s ease}
+
+  .divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+  .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .live-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--success);font-weight:600}
+  .live-dot{width:7px;height:7px;background:var(--success);border-radius:50%;animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+
+  @media(max-width:420px){
+    .main{padding:20px 12px 60px}
+    .card{padding:20px 16px}
+    .result-emoji{font-size:52px}
+    .result-job-name{font-size:24px}
+    .stat-count{font-size:22px}
+  }
+</style>
 </head>
-<body class="bg-slate-950 text-slate-100">
-    <div id="root"></div>
+<body>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+<div class="header">
+  <div class="header-logo"><span>🎲</span> 직업 추첨</div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <div class="live-badge" id="liveIndicator" style="display:none;"><div class="live-dot"></div>LIVE</div>
+    <button class="btn-ghost" id="btnAdminLogin">관리자</button>
+  </div>
+</div>
 
-        const STORAGE_KEY = 'rpg_event_registrations';
-        const ADMIN_PASSWORD = "admin777"; 
+<div class="main">
 
-        const JOBS = [
-            { id: 'warrior', name: '전사', color: 'bg-red-500', icon: 'shield', desc: '강력한 체력으로 동료를 지키는 방패' },
-            { id: 'mage', name: '마법사', color: 'bg-blue-500', icon: 'wand-2', desc: '강력한 원소 마법을 구사하는 현자' },
-            { id: 'rogue', name: '도적', color: 'bg-purple-600', icon: 'sword', desc: '그림자 속에서 적을 기습하는 암살자' },
-            { id: 'archer', name: '궁수', color: 'bg-green-600', icon: 'target', desc: '백발백중의 실력을 자랑하는 명사수' },
-            { id: 'priest', name: '사제', color: 'bg-yellow-500', icon: 'cross', desc: '신성한 힘으로 상처를 치유하는 인도자' }
-        ];
+  <!-- 참여자 화면 -->
+  <div id="screenRegister" class="screen active">
+    <div class="card">
+      <div class="section-title">직업 추첨 참여하기</div>
+      <div class="section-desc">닉네임과 비밀번호를 입력하면 랜덤으로 직업이 배정됩니다.</div>
+      <div class="form-group">
+        <label class="form-label" for="inputNickname">닉네임</label>
+        <input class="form-input" type="text" id="inputNickname" placeholder="닉네임을 입력하세요" maxlength="20" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="inputPassword">비밀번호</label>
+        <input class="form-input" type="password" id="inputPassword" placeholder="비밀번호를 입력하세요" maxlength="30" autocomplete="new-password">
+      </div>
+      <button class="btn-primary" id="btnRegister">직업 추첨하기 🎲</button>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px;">직업 소개</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="stat-card job-warrior"><div style="font-size:22px;margin-bottom:4px;">⚔️</div><div style="font-weight:700;font-size:14px;">전사</div><div style="font-size:12px;opacity:.8;">강인한 체력, 근접전 특화</div></div>
+        <div class="stat-card job-mage"><div style="font-size:22px;margin-bottom:4px;">🔮</div><div style="font-weight:700;font-size:14px;">마법사</div><div style="font-size:12px;opacity:.8;">강력한 마법, 원거리 공격</div></div>
+        <div class="stat-card job-archer"><div style="font-size:22px;margin-bottom:4px;">🏹</div><div style="font-weight:700;font-size:14px;">궁수</div><div style="font-size:12px;opacity:.8;">정밀한 조준, 빠른 발동</div></div>
+        <div class="stat-card job-rogue"><div style="font-size:22px;margin-bottom:4px;">🗡️</div><div style="font-weight:700;font-size:14px;">도적</div><div style="font-size:12px;opacity:.8;">은신과 기습, 치명적</div></div>
+        <div class="stat-card job-priest" style="grid-column:1/-1;"><div style="font-size:22px;margin-bottom:4px;">✨</div><div style="font-weight:700;font-size:14px;">사제</div><div style="font-size:12px;opacity:.8;">신성한 힘, 아군 지원과 회복</div></div>
+      </div>
+    </div>
+  </div>
 
-        const Icon = ({ name, className }) => {
-            useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [name]);
-            return <i data-lucide={name} className={className}></i>;
-        };
+  <!-- 결과 화면 -->
+  <div id="screenResult" class="screen">
+    <div class="card result-card" id="resultCard"></div>
+    <button class="btn-primary" id="btnBack" style="margin-top:16px;background:#fff;color:var(--text);border:1.5px solid var(--border);box-shadow:none;">← 돌아가기</button>
+  </div>
 
-        function App() {
-            const [nickname, setNickname] = useState('');
-            const [password, setPassword] = useState('');
-            const [loading, setLoading] = useState(true);
-            const [assignment, setAssignment] = useState(null);
-            const [error, setError] = useState('');
-            const [view, setView] = useState('login'); 
-            const [adminInput, setAdminInput] = useState('');
-            const [allUsers, setAllUsers] = useState([]);
-            const [stats, setStats] = useState({});
+  <!-- 관리자 로그인 -->
+  <div id="screenAdminLogin" class="screen">
+    <div class="card">
+      <div class="section-title">관리자 로그인</div>
+      <div class="section-desc">관리자 비밀번호를 입력하세요.</div>
+      <div class="form-group">
+        <label class="form-label" for="adminPw">관리자 비밀번호</label>
+        <input class="form-input" type="password" id="adminPw" placeholder="비밀번호 입력">
+      </div>
+      <button class="btn-primary" id="btnAdminSubmit">로그인</button>
+      <button class="btn-ghost" id="btnAdminCancel" style="width:100%;margin-top:8px;text-align:center;">취소</button>
+    </div>
+  </div>
 
-            useEffect(() => {
-                const timer = setTimeout(() => {
-                    loadData();
-                    setLoading(false);
-                }, 800);
-                return () => clearTimeout(timer);
-            }, []);
+  <!-- 관리자 대시보드 -->
+  <div id="screenAdmin" class="screen">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="admin-badge">🔐 관리자 모드</div>
+      <button class="btn-ghost" id="btnAdminLogout">로그아웃</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tabBtnStats" onclick="switchTab('stats')">📊 통계</button>
+      <button class="tab" id="tabBtnList" onclick="switchTab('list')">📋 목록</button>
+    </div>
 
-            const loadData = () => {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    const data = JSON.parse(saved);
-                    setAllUsers(data);
-                    calculateStats(data);
-                }
-            };
+    <!-- 통계 탭 -->
+    <div id="tabStats">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <div>
+            <div class="section-title" style="margin-bottom:2px;">포지션 통계</div>
+            <div style="font-size:13px;color:var(--text2);">전체 <span id="adminTotal" style="font-weight:700;color:var(--text);">0</span>명 참여</div>
+          </div>
+          <button class="btn-secondary" id="btnExportCSV">📥 CSV</button>
+        </div>
+        <div id="statsGrid" class="stats-grid"></div>
+        <hr class="divider">
+        <div id="progressBars"></div>
+      </div>
+      <div class="card" style="margin-top:16px;border-color:#fecaca;background:var(--danger-light);">
+        <div style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:6px;">⚠️ 위험 구역</div>
+        <div style="font-size:13px;color:#b91c1c;margin-bottom:12px;">데이터를 초기화하면 모든 참여자 기록이 삭제됩니다.</div>
+        <button class="btn-danger" id="btnReset">전체 데이터 초기화</button>
+      </div>
+    </div>
 
-            const calculateStats = (data) => {
-                const counts = {};
-                JOBS.forEach(j => counts[j.name] = 0);
-                data.forEach(u => { if (u.jobName) counts[u.jobName] = (counts[u.jobName] || 0) + 1; });
-                setStats(counts);
-            };
+    <!-- 목록 탭 -->
+    <div id="tabList" style="display:none;">
+      <div class="card">
+        <input class="search-input" type="text" id="searchInput" placeholder="🔍 닉네임으로 검색...">
+        <div class="filter-row" id="filterRow">
+          <button class="filter-btn active" data-job="all">전체</button>
+          <button class="filter-btn" data-job="전사">⚔️ 전사</button>
+          <button class="filter-btn" data-job="마법사">🔮 마법사</button>
+          <button class="filter-btn" data-job="궁수">🏹 궁수</button>
+          <button class="filter-btn" data-job="도적">🗡️ 도적</button>
+          <button class="filter-btn" data-job="사제">✨ 사제</button>
+        </div>
+        <div class="total-info">
+          <span>검색 결과</span>
+          <span class="total-count" id="listCount">0명</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>닉네임</th><th>직업</th><th>참여 일시</th></tr></thead>
+            <tbody id="tableBody">
+              <tr><td colspan="4"><div class="empty"><div class="empty-icon">📭</div><div class="empty-text">참여자가 없습니다</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            // 마기시스템(MAGI) 기반 비율 맞춤형 배정 알고리즘
-            const assignJobBalanced = (currentData) => {
-                const counts = {};
-                JOBS.forEach(j => counts[j.name] = 0);
-                currentData.forEach(u => { if (u.jobName) counts[u.jobName]++; });
+</div>
 
-                const min = Math.min(...Object.values(counts));
-                const candidates = JOBS.filter(j => counts[j.name] === min);
-                return candidates[Math.floor(Math.random() * candidates.length)];
-            };
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
-            const handleJoin = (e) => {
-                e.preventDefault();
-                if (!nickname.trim() || !password.trim()) { setError('정보를 모두 입력해주세요.'); return; }
-                setError('');
-                setLoading(true);
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">확인</div>
+    <div class="modal-desc"  id="modalDesc"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modalCancel">취소</button>
+      <button class="btn-danger" id="modalConfirm">초기화</button>
+    </div>
+  </div>
+</div>
 
-                const currentData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-                const existingUser = currentData.find(u => u.nickname === nickname);
+<!-- Firebase SDK (modular) -->
+<script type="module">
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs,
+         deleteDoc, doc, query, orderBy, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-                if (existingUser) {
-                    if (existingUser.password === password) {
-                        setAssignment(existingUser);
-                        setView('result');
-                    } else {
-                        setError('이미 등록된 이름이지만 비밀번호가 틀렸습니다.');
-                    }
-                } else {
-                    const selected = assignJobBalanced(currentData);
-                    const newEntry = { 
-                        nickname, 
-                        password, 
-                        jobId: selected.id, 
-                        jobName: selected.name, 
-                        timestamp: Date.now() 
-                    };
-                    
-                    const updatedData = [...currentData, newEntry];
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-                    setAllUsers(updatedData);
-                    calculateStats(updatedData);
-                    setAssignment(newEntry);
-                    setView('result');
-                }
-                setLoading(false);
-            };
+// ─── CONFIG ────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyDT-GfJtgKovGv5WKPgjaRtbRUCQ7mQQrs",
+  authDomain:        "rpg-event.firebaseapp.com",
+  projectId:         "rpg-event",
+  storageBucket:     "rpg-event.firebasestorage.app",
+  messagingSenderId: "946792652979",
+  appId:             "1:946792652979:web:f87ab41c7cab70728550c6",
+  measurementId:     "G-WZEH4TWT9G"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const COL = "participants";
 
-            const handleAdminLogin = (e) => {
-                e.preventDefault();
-                if (adminInput === ADMIN_PASSWORD) {
-                    loadData();
-                    setView('admin');
-                    setError('');
-                } else {
-                    setError('관리자 비밀번호가 틀렸습니다.');
-                }
-            };
+// ─── CONSTANTS ─────────────────────────────────────────────
+const ADMIN_PW  = "admin1234"; // ← 원하는 비밀번호로 변경하세요
+const MAX_USERS = 150;
 
-            if (loading) return (
-                <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-indigo-400">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-indigo-500 mb-4 shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
-                    <p className="text-xs font-bold tracking-[0.3em] animate-pulse">SYNCHRONIZING REALM...</p>
-                </div>
-            );
+const JOBS = [
+  { id:"warrior", name:"전사",  emoji:"⚔️",  cls:"job-warrior", bar:"#ef4444",
+    desc:"강인한 체력과 근접전 특화. 팀의 최전선을 담당하며 적의 공격을 막아냅니다." },
+  { id:"mage",    name:"마법사", emoji:"🔮", cls:"job-mage",    bar:"#8b5cf6",
+    desc:"강력한 마법으로 적을 섬멸합니다. 원거리에서 광역 피해를 입힐 수 있습니다." },
+  { id:"archer",  name:"궁수",  emoji:"🏹",  cls:"job-archer",  bar:"#10b981",
+    desc:"정밀한 조준과 빠른 발동 속도가 특징. 원거리에서 적을 정확하게 제압합니다." },
+  { id:"rogue",   name:"도적",  emoji:"🗡️", cls:"job-rogue",   bar:"#f59e0b",
+    desc:"은신과 기습을 통한 치명타가 강점. 빠른 기동력으로 전장을 누빕니다." },
+  { id:"priest",  name:"사제",  emoji:"✨",  cls:"job-priest",  bar:"#3b82f6",
+    desc:"신성한 힘으로 아군을 지원하고 회복합니다. 팀의 생존을 책임지는 핵심 직업." },
+];
 
-            return (
-                <div className="max-w-md mx-auto p-4 sm:p-8 min-h-screen flex flex-col bg-slate-950">
-                    <header className="text-center mb-10 pt-4 fade-in">
-                        <h1 className="text-4xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500 bg-clip-text text-transparent tracking-tighter drop-shadow-sm">QUEST MASTER</h1>
-                        <p className="text-slate-500 mt-2 font-bold text-[10px] tracking-[0.2em] uppercase opacity-80">Guild Assignment System</p>
-                    </header>
+// ─── STATE ─────────────────────────────────────────────────
+let allData      = [];
+let currentFilter = "all";
+let isAdmin       = false;
+let unsub         = null;
+let modalCb       = null;
 
-                    {view === 'login' && (
-                        <div className="bg-slate-900/80 border border-white/5 rounded-3xl p-8 shadow-2xl fade-in backdrop-blur-sm">
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                <Icon name="users" className="w-5 h-5 text-indigo-400" /> 모험가 가입
-                            </h2>
-                            <form onSubmit={handleJoin} className="space-y-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-slate-500 ml-1 uppercase tracking-wider">Nickname</label>
-                                    <input type="text" value={nickname} onChange={e => setNickname(e.target.value)} className="w-full bg-slate-800 border border-white/5 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600 text-slate-200" placeholder="본인의 이름을 입력하세요" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-slate-500 ml-1 uppercase tracking-wider">Password</label>
-                                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-800 border border-white/5 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600 text-slate-200" placeholder="비밀번호를 입력하세요" />
-                                </div>
-                                {error && <p className="text-red-400 text-xs bg-red-400/10 p-4 rounded-2xl border border-red-400/20 font-medium leading-relaxed">{error}</p>}
-                                <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 font-black py-4 rounded-2xl shadow-xl transition-all active:scale-95 shadow-indigo-600/20 mt-2">운명 결정하기</button>
-                            </form>
-                            <button onClick={() => { setView('admin_auth'); setError(''); }} className="mt-10 w-full text-slate-700 hover:text-slate-500 text-[10px] font-bold tracking-widest uppercase transition-colors">Admin Console</button>
-                        </div>
-                    )}
+// ─── REALTIME LISTENER ─────────────────────────────────────
+function startListener() {
+  if (unsub) return;
+  const q = query(collection(db, COL), orderBy("joinedAt", "desc"));
+  unsub = onSnapshot(q,
+    snap => {
+      allData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      document.getElementById("liveIndicator").style.display = "inline-flex";
+      if (isAdmin) refreshAdmin();
+    },
+    err => showToast("연결 오류: " + err.message)
+  );
+}
 
-                    {view === 'admin_auth' && (
-                        <div className="bg-slate-900 border border-white/5 rounded-3xl p-8 fade-in shadow-2xl">
-                            <h2 className="text-xl font-bold text-yellow-500 mb-6 flex items-center justify-center gap-2"><Icon name="key" className="w-5 h-5" /> 관리자 접속</h2>
-                            <form onSubmit={handleAdminLogin} className="space-y-4">
-                                <input type="password" autoFocus value={adminInput} onChange={e => setAdminInput(e.target.value)} className="w-full bg-slate-800 border border-white/5 rounded-2xl px-5 py-4 mb-4 outline-none focus:ring-2 focus:ring-yellow-500/50 text-slate-200" placeholder="관리자 비밀번호" />
-                                {error && <p className="text-red-400 text-sm mb-4 font-medium text-center">{error}</p>}
-                                <div className="flex gap-2">
-                                    <button type="button" onClick={() => setView('login')} className="flex-1 bg-slate-800 py-4 rounded-2xl font-bold hover:bg-slate-700 transition-all border border-white/5">취소</button>
-                                    <button type="submit" className="flex-1 bg-yellow-600 py-4 rounded-2xl font-bold hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-600/20">인증</button>
-                                </div>
-                            </form>
-                        </div>
-                    )}
+// ─── UTILS ─────────────────────────────────────────────────
+function esc(s) {
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function showConfirm(title, desc, cb) {
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalDesc").textContent  = desc;
+  document.getElementById("confirmModal").classList.add("show");
+  modalCb = cb;
+}
 
-                    {view === 'result' && assignment && (
-                        <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl fade-in">
-                            <div className={`${JOBS.find(j => j.id === assignment.jobId)?.color} p-12 text-center relative`}>
-                                <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
-                                <div className="bg-white/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/30 backdrop-blur-md shadow-[inset_0_2px_10px_rgba(255,255,255,0.2)]">
-                                    <Icon name={JOBS.find(j => j.id === assignment.jobId)?.icon} className="w-12 h-12 text-white drop-shadow-lg" />
-                                </div>
-                                <h2 className="text-5xl font-black text-white tracking-tighter drop-shadow-lg">{assignment.jobName}</h2>
-                                <p className="text-white/80 mt-2 font-bold tracking-wide">{assignment.nickname} 용사님</p>
-                            </div>
-                            <div className="p-10 text-center bg-slate-900">
-                                <p className="text-slate-300 italic mb-10 leading-relaxed font-medium">"{JOBS.find(j => j.id === assignment.jobId)?.desc}"</p>
-                                <button onClick={() => { setView('login'); setNickname(''); setPassword(''); }} className="text-slate-600 hover:text-white font-bold flex items-center justify-center gap-2 mx-auto transition-colors group">
-                                    <Icon name="log-out" className="w-4 h-4 group-hover:translate-x-1 transition-transform" /> 로그아웃 후 메인으로
-                                </button>
-                            </div>
-                        </div>
-                    )}
+// ─── MODAL ─────────────────────────────────────────────────
+document.getElementById("modalCancel").onclick  = () => document.getElementById("confirmModal").classList.remove("show");
+document.getElementById("modalConfirm").onclick = () => {
+  document.getElementById("confirmModal").classList.remove("show");
+  if (modalCb) modalCb();
+};
 
-                    {view === 'admin' && (
-                        <div className="space-y-4 fade-in">
-                            <div className="flex justify-between items-center bg-slate-900 p-5 rounded-2xl border border-white/5">
-                                <h2 className="font-black flex items-center gap-2 text-lg"><Icon name="bar-chart-3" className="w-5 h-5 text-indigo-400" /> 모험가 현황</h2>
-                                <button onClick={() => setView('login')} className="text-xs bg-slate-800 px-4 py-2 rounded-xl border border-white/5 font-bold hover:bg-slate-700 transition-all text-slate-400">나가기</button>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 p-5 rounded-3xl text-center col-span-2 shadow-xl shadow-indigo-600/10">
-                                    <div className="text-4xl font-black text-white">{allUsers.length}</div>
-                                    <div className="text-[10px] font-black opacity-60 uppercase tracking-widest text-indigo-100">Total Players</div>
-                                </div>
-                                {JOBS.map(job => (
-                                    <div key={job.id} className="bg-slate-900 border border-white/5 p-4 rounded-3xl text-center">
-                                        <div className="text-2xl font-black text-slate-100">{stats[job.name] || 0}</div>
-                                        <div className="text-[10px] text-slate-500 uppercase font-black tracking-tighter">{job.name}</div>
-                                    </div>
-                                ))}
-                            </div>
+// ─── ASSIGN JOB (balanced) ─────────────────────────────────
+function assignJob() {
+  const cnt = {};
+  JOBS.forEach(j => cnt[j.name] = 0);
+  allData.forEach(u => { if (cnt[u.job] !== undefined) cnt[u.job]++; });
+  const min  = Math.min(...Object.values(cnt));
+  const pool = JOBS.filter(j => cnt[j.name] === min);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
-                            <div className="bg-slate-900 border border-white/5 rounded-[2rem] overflow-hidden max-h-[400px] overflow-y-auto scrollbar-hide shadow-2xl">
-                                <table className="w-full text-sm border-collapse">
-                                    <thead className="bg-slate-800/80 text-slate-400 text-[10px] font-black uppercase sticky top-0 border-b border-white/5 backdrop-blur-md">
-                                        <tr>
-                                            <th className="px-6 py-4 text-left tracking-widest">Name</th>
-                                            <th className="px-6 py-4 text-right tracking-widest">Class</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5 bg-slate-900">
-                                        {allUsers.length === 0 ? (
-                                            <tr><td colSpan="2" className="p-16 text-center text-slate-600 italic font-medium">등록된 정보가 없습니다.</td></tr>
-                                        ) : (
-                                            [...allUsers].sort((a,b) => b.timestamp - a.timestamp).map((u, i) => (
-                                                <tr key={i} className="hover:bg-white/5 transition-colors group">
-                                                    <td className="px-6 py-4 font-bold text-slate-300 group-hover:text-white transition-colors">{u.nickname}</td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black text-white shadow-sm border border-white/10 ${JOBS.find(j => j.id === u.jobId)?.color}`}>
-                                                            {u.jobName}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <p className="text-[9px] text-slate-700 text-center font-bold italic opacity-60">*데이터는 로컬 저장소(현재 기기)에 저장됩니다.</p>
-                        </div>
-                    )}
-                    
-                    <footer className="mt-auto pt-10 text-center text-slate-800 text-[9px] font-bold tracking-[0.4em] pb-6 uppercase opacity-40">
-                        &mdash; RPG Master Console &mdash;
-                    </footer>
-                </div>
-            );
-        }
+// ─── REGISTER ──────────────────────────────────────────────
+document.getElementById("btnRegister").onclick = async () => {
+  const nick = document.getElementById("inputNickname").value.trim();
+  const pw   = document.getElementById("inputPassword").value;
+  if (!nick)        { showToast("닉네임을 입력해주세요."); return; }
+  if (nick.length < 2) { showToast("닉네임은 2자 이상 입력해주세요."); return; }
+  if (!pw)          { showToast("비밀번호를 입력해주세요."); return; }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+  const btn = document.getElementById("btnRegister");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>처리 중...';
+
+  try {
+    const existing = allData.find(u => u.nickname === nick);
+    if (existing) {
+      showResult(nick, JOBS.find(j => j.name === existing.job));
+      showToast("이미 참여하셨습니다. 기존 직업을 보여드립니다.");
+      return;
+    }
+    if (allData.length >= MAX_USERS) { showToast("최대 참여 인원에 도달했습니다."); return; }
+
+    const job = assignJob();
+    await addDoc(collection(db, COL), {
+      nickname: nick, job: job.name, jobId: job.id,
+      joinedAt: new Date().toISOString()
+    });
+    document.getElementById("inputNickname").value = "";
+    document.getElementById("inputPassword").value = "";
+    showResult(nick, job);
+  } catch(e) {
+    showToast("오류: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "직업 추첨하기 🎲";
+  }
+};
+["inputNickname","inputPassword"].forEach(id =>
+  document.getElementById(id).addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("btnRegister").click();
+  })
+);
+
+// ─── RESULT ────────────────────────────────────────────────
+function showResult(nick, job) {
+  const c = document.getElementById("resultCard");
+  c.className = `card result-card ${job.cls}`;
+  c.innerHTML = `
+    <span class="result-emoji">${job.emoji}</span>
+    <div class="result-badge ${job.cls}">${job.name}</div>
+    <div class="result-job-name">${job.name}</div>
+    <div class="result-user">${esc(nick)} 님의 직업</div>
+    <div class="result-desc">${job.desc}</div>`;
+  showScreen("screenResult");
+}
+document.getElementById("btnBack").onclick = () => showScreen("screenRegister");
+
+// ─── ADMIN AUTH ────────────────────────────────────────────
+document.getElementById("btnAdminLogin").onclick  = () => showScreen("screenAdminLogin");
+document.getElementById("btnAdminCancel").onclick = () => showScreen("screenRegister");
+document.getElementById("btnAdminLogout").onclick = () => {
+  isAdmin = false; showScreen("screenRegister"); showToast("로그아웃했습니다.");
+};
+document.getElementById("adminPw").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("btnAdminSubmit").click();
+});
+document.getElementById("btnAdminSubmit").onclick = () => {
+  if (document.getElementById("adminPw").value === ADMIN_PW) {
+    document.getElementById("adminPw").value = "";
+    isAdmin = true;
+    startListener();
+    showScreen("screenAdmin");
+    refreshAdmin();
+    showToast("관리자 모드로 로그인했습니다.");
+  } else {
+    showToast("비밀번호가 올바르지 않습니다.");
+  }
+};
+
+// ─── TABS ──────────────────────────────────────────────────
+window.switchTab = tab => {
+  document.getElementById("tabBtnStats").classList.toggle("active", tab === "stats");
+  document.getElementById("tabBtnList").classList.toggle("active",  tab === "list");
+  document.getElementById("tabStats").style.display = tab === "stats" ? "block" : "none";
+  document.getElementById("tabList").style.display  = tab === "list"  ? "block" : "none";
+  if (tab === "list") renderTable();
+};
+
+// ─── ADMIN REFRESH ─────────────────────────────────────────
+function refreshAdmin() {
+  const total = allData.length;
+  document.getElementById("adminTotal").textContent = total;
+
+  const cnt = {};
+  JOBS.forEach(j => cnt[j.name] = 0);
+  allData.forEach(u => { if (cnt[u.job] !== undefined) cnt[u.job]++; });
+
+  document.getElementById("statsGrid").innerHTML = JOBS.map(j => `
+    <div class="stat-card ${j.cls}">
+      <div style="font-size:20px;margin-bottom:4px;">${j.emoji}</div>
+      <div class="stat-count">${cnt[j.name]}</div>
+      <div class="stat-job">${j.name}</div>
+    </div>`).join("");
+
+  document.getElementById("progressBars").innerHTML = JOBS.map(j => {
+    const pct = total > 0 ? ((cnt[j.name]/total)*100).toFixed(1) : 0;
+    return `
+      <div class="progress-item">
+        <div class="progress-header">
+          <span>${j.emoji} ${j.name}</span>
+          <span style="font-family:'Space Mono',monospace;font-size:12px;">${cnt[j.name]}명 (${pct}%)</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar" style="width:${pct}%;background:${j.bar};"></div>
+        </div>
+      </div>`;
+  }).join("");
+
+  if (document.getElementById("tabList").style.display !== "none") renderTable();
+}
+
+// ─── TABLE ─────────────────────────────────────────────────
+function renderTable() {
+  const search = (document.getElementById("searchInput")?.value || "").toLowerCase();
+  const filtered = allData.filter(u =>
+    u.nickname.toLowerCase().includes(search) &&
+    (currentFilter === "all" || u.job === currentFilter)
+  );
+  document.getElementById("listCount").textContent = `${filtered.length}명`;
+
+  if (!filtered.length) {
+    document.getElementById("tableBody").innerHTML =
+      `<tr><td colspan="4"><div class="empty"><div class="empty-icon">📭</div><div class="empty-text">검색 결과가 없습니다</div></div></td></tr>`;
+    return;
+  }
+  document.getElementById("tableBody").innerHTML = filtered.map((u,i) => {
+    const job = JOBS.find(j => j.name === u.job) || JOBS[0];
+    const dt  = new Date(u.joinedAt);
+    const ds  = `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+    return `<tr>
+      <td style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text3);">${i+1}</td>
+      <td style="font-weight:600;">${esc(u.nickname)}</td>
+      <td><span class="job-pill ${job.cls}">${job.emoji} ${job.name}</span></td>
+      <td style="font-size:12px;color:var(--text2);font-family:'Space Mono',monospace;">${ds}</td>
+    </tr>`;
+  }).join("");
+}
+document.getElementById("searchInput")?.addEventListener("input", renderTable);
+document.getElementById("filterRow")?.addEventListener("click", e => {
+  const btn = e.target.closest(".filter-btn");
+  if (!btn) return;
+  currentFilter = btn.dataset.job;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b === btn));
+  renderTable();
+});
+
+// ─── RESET ─────────────────────────────────────────────────
+document.getElementById("btnReset").onclick = () =>
+  showConfirm("전체 데이터 초기화",
+    `현재 ${allData.length}명의 참여 기록이 모두 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`,
+    async () => {
+      try {
+        const snap = await getDocs(collection(db, COL));
+        await Promise.all(snap.docs.map(d => deleteDoc(doc(db, COL, d.id))));
+        showToast(`${snap.docs.length}개 데이터가 초기화되었습니다.`);
+      } catch(e) { showToast("초기화 오류: " + e.message); }
+    }
+  );
+
+// ─── CSV EXPORT ────────────────────────────────────────────
+document.getElementById("btnExportCSV").onclick = () => {
+  if (!allData.length) { showToast("내보낼 데이터가 없습니다."); return; }
+  const rows = [["#","닉네임","직업","참여일시"],
+    ...allData.map((u,i) => [i+1, u.nickname, u.job, new Date(u.joinedAt).toLocaleString("ko-KR")])
+  ];
+  const csv  = rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF"+csv], { type:"text/csv;charset=utf-8;" });
+  const a    = Object.assign(document.createElement("a"),
+    { href: URL.createObjectURL(blob), download:`직업추첨_${new Date().toLocaleDateString("ko-KR")}.csv` });
+  a.click();
+  showToast("CSV 파일을 내보냈습니다.");
+};
+
+// ─── INIT ──────────────────────────────────────────────────
+startListener(); // 참여자도 중복 체크 위해 즉시 시작
+</script>
 </body>
 </html>
