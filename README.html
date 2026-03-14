@@ -1,24 +1,23 @@
-<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QUEST MASTER - 직업 배정 시스템</title>
     <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
     <!-- React & Babel CDN -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="[https://unpkg.com/react@18/umd/react.production.min.js](https://unpkg.com/react@18/umd/react.production.min.js)"></script>
+    <script src="[https://unpkg.com/react-dom@18/umd/react-dom.production.min.js](https://unpkg.com/react-dom@18/umd/react-dom.production.min.js)"></script>
+    <script src="[https://unpkg.com/@babel/standalone/babel.min.js](https://unpkg.com/@babel/standalone/babel.min.js)"></script>
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
-        body { font-family: 'Pretendard', sans-serif; overflow-x: hidden; }
+        @import url('[https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap](https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap)');
+        body { font-family: 'Pretendard', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
@@ -56,7 +55,6 @@
             const [allUsers, setAllUsers] = useState([]);
             const [stats, setStats] = useState({});
 
-            // 데이터 로드 및 초기화
             useEffect(() => {
                 const timer = setTimeout(() => {
                     loadData();
@@ -81,6 +79,7 @@
                 setStats(counts);
             };
 
+            // 마기시스템(MAGI) 기반 비율 맞춤형 배정 알고리즘
             const assignJobBalanced = (currentData) => {
                 const counts = {};
                 JOBS.forEach(j => counts[j.name] = 0);
@@ -93,11 +92,10 @@
 
             const handleJoin = (e) => {
                 e.preventDefault();
-                if (!nickname.trim() || !password.trim()) { setError('모든 항목을 입력해주세요.'); return; }
+                if (!nickname.trim() || !password.trim()) { setError('정보를 모두 입력해주세요.'); return; }
                 setError('');
                 setLoading(true);
 
-                // 로컬 스토리지 데이터 처리
                 const currentData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
                 const existingUser = currentData.find(u => u.nickname === nickname);
 
@@ -106,7 +104,7 @@
                         setAssignment(existingUser);
                         setView('result');
                     } else {
-                        setError('비밀번호가 일치하지 않습니다.');
+                        setError('이미 등록된 이름이지만 비밀번호가 틀렸습니다.');
                     }
                 } else {
                     const selected = assignJobBalanced(currentData);
@@ -141,40 +139,48 @@
 
             if (loading) return (
                 <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-indigo-400">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-indigo-500 mb-4"></div>
-                    <p className="text-sm font-bold tracking-widest animate-pulse">LOADING REALM...</p>
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-indigo-500 mb-4 shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
+                    <p className="text-xs font-bold tracking-[0.3em] animate-pulse">SYNCHRONIZING REALM...</p>
                 </div>
             );
 
             return (
-                <div className="max-w-md mx-auto p-4 sm:p-8 min-h-screen flex flex-col">
+                <div className="max-w-md mx-auto p-4 sm:p-8 min-h-screen flex flex-col bg-slate-950">
                     <header className="text-center mb-10 pt-4 fade-in">
-                        <h1 className="text-4xl font-black bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">QUEST MASTER</h1>
-                        <p className="text-slate-500 mt-2 font-medium">RPG 직업 배정 시스템</p>
+                        <h1 className="text-4xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500 bg-clip-text text-transparent tracking-tighter drop-shadow-sm">QUEST MASTER</h1>
+                        <p className="text-slate-500 mt-2 font-bold text-[10px] tracking-[0.2em] uppercase opacity-80">Guild Assignment System</p>
                     </header>
 
                     {view === 'login' && (
-                        <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-2xl fade-in">
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Icon name="users" className="w-5 h-5 text-indigo-400" /> 모험가 등록</h2>
+                        <div className="bg-slate-900/80 border border-white/5 rounded-3xl p-8 shadow-2xl fade-in backdrop-blur-sm">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                                <Icon name="users" className="w-5 h-5 text-indigo-400" /> 모험가 가입
+                            </h2>
                             <form onSubmit={handleJoin} className="space-y-4">
-                                <input type="text" value={nickname} onChange={e => setNickname(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="닉네임(본명)" />
-                                <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="비밀번호" />
-                                {error && <p className="text-red-400 text-sm bg-red-400/5 p-3 rounded-xl border border-red-400/10">{error}</p>}
-                                <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95">운명 결정하기</button>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-slate-500 ml-1 uppercase tracking-wider">Nickname</label>
+                                    <input type="text" value={nickname} onChange={e => setNickname(e.target.value)} className="w-full bg-slate-800 border border-white/5 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600 text-slate-200" placeholder="본인의 이름을 입력하세요" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-slate-500 ml-1 uppercase tracking-wider">Password</label>
+                                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-800 border border-white/5 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600 text-slate-200" placeholder="비밀번호를 입력하세요" />
+                                </div>
+                                {error && <p className="text-red-400 text-xs bg-red-400/10 p-4 rounded-2xl border border-red-400/20 font-medium leading-relaxed">{error}</p>}
+                                <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 font-black py-4 rounded-2xl shadow-xl transition-all active:scale-95 shadow-indigo-600/20 mt-2">운명 결정하기</button>
                             </form>
-                            <button onClick={() => { setView('admin_auth'); setError(''); }} className="mt-8 w-full text-slate-600 text-[10px] font-bold tracking-widest uppercase hover:text-slate-400 transition-colors">Admin Login</button>
+                            <button onClick={() => { setView('admin_auth'); setError(''); }} className="mt-10 w-full text-slate-700 hover:text-slate-500 text-[10px] font-bold tracking-widest uppercase transition-colors">Admin Console</button>
                         </div>
                     )}
 
                     {view === 'admin_auth' && (
-                        <div className="bg-slate-900 border border-white/5 rounded-3xl p-8 fade-in">
-                            <h2 className="text-xl font-bold text-yellow-500 mb-6 flex items-center justify-center gap-2"><Icon name="key" className="w-5 h-5" /> 관리자 인증</h2>
+                        <div className="bg-slate-900 border border-white/5 rounded-3xl p-8 fade-in shadow-2xl">
+                            <h2 className="text-xl font-bold text-yellow-500 mb-6 flex items-center justify-center gap-2"><Icon name="key" className="w-5 h-5" /> 관리자 접속</h2>
                             <form onSubmit={handleAdminLogin} className="space-y-4">
-                                <input type="password" autoFocus value={adminInput} onChange={e => setAdminInput(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 mb-4 outline-none focus:ring-2 focus:ring-yellow-500" placeholder="비밀번호 입력" />
-                                {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+                                <input type="password" autoFocus value={adminInput} onChange={e => setAdminInput(e.target.value)} className="w-full bg-slate-800 border border-white/5 rounded-2xl px-5 py-4 mb-4 outline-none focus:ring-2 focus:ring-yellow-500/50 text-slate-200" placeholder="관리자 비밀번호" />
+                                {error && <p className="text-red-400 text-sm mb-4 font-medium text-center">{error}</p>}
                                 <div className="flex gap-2">
-                                    <button type="button" onClick={() => setView('login')} className="flex-1 bg-slate-800 py-4 rounded-2xl font-bold">취소</button>
-                                    <button type="submit" className="flex-1 bg-yellow-600 py-4 rounded-2xl font-bold">확인</button>
+                                    <button type="button" onClick={() => setView('login')} className="flex-1 bg-slate-800 py-4 rounded-2xl font-bold hover:bg-slate-700 transition-all border border-white/5">취소</button>
+                                    <button type="submit" className="flex-1 bg-yellow-600 py-4 rounded-2xl font-bold hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-600/20">인증</button>
                                 </div>
                             </form>
                         </div>
@@ -182,16 +188,19 @@
 
                     {view === 'result' && assignment && (
                         <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl fade-in">
-                            <div className={`${JOBS.find(j => j.id === assignment.jobId)?.color} p-12 text-center`}>
-                                <div className="bg-white/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/30 backdrop-blur-md shadow-inner">
-                                    <Icon name={JOBS.find(j => j.id === assignment.jobId)?.icon} className="w-12 h-12 text-white" />
+                            <div className={`${JOBS.find(j => j.id === assignment.jobId)?.color} p-12 text-center relative`}>
+                                <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
+                                <div className="bg-white/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/30 backdrop-blur-md shadow-[inset_0_2px_10px_rgba(255,255,255,0.2)]">
+                                    <Icon name={JOBS.find(j => j.id === assignment.jobId)?.icon} className="w-12 h-12 text-white drop-shadow-lg" />
                                 </div>
                                 <h2 className="text-5xl font-black text-white tracking-tighter drop-shadow-lg">{assignment.jobName}</h2>
-                                <p className="text-white/80 mt-2 font-bold">{assignment.nickname} 용사님</p>
+                                <p className="text-white/80 mt-2 font-bold tracking-wide">{assignment.nickname} 용사님</p>
                             </div>
-                            <div className="p-10 text-center">
-                                <p className="text-slate-300 italic mb-8 leading-relaxed font-medium">"{JOBS.find(j => j.id === assignment.jobId)?.desc}"</p>
-                                <button onClick={() => { setView('login'); setNickname(''); setPassword(''); }} className="text-slate-500 font-bold flex items-center justify-center gap-2 mx-auto hover:text-white transition-colors"><Icon name="log-out" className="w-4 h-4" /> 로그아웃</button>
+                            <div className="p-10 text-center bg-slate-900">
+                                <p className="text-slate-300 italic mb-10 leading-relaxed font-medium">"{JOBS.find(j => j.id === assignment.jobId)?.desc}"</p>
+                                <button onClick={() => { setView('login'); setNickname(''); setPassword(''); }} className="text-slate-600 hover:text-white font-bold flex items-center justify-center gap-2 mx-auto transition-colors group">
+                                    <Icon name="log-out" className="w-4 h-4 group-hover:translate-x-1 transition-transform" /> 로그아웃 후 메인으로
+                                </button>
                             </div>
                         </div>
                     )}
@@ -199,35 +208,40 @@
                     {view === 'admin' && (
                         <div className="space-y-4 fade-in">
                             <div className="flex justify-between items-center bg-slate-900 p-5 rounded-2xl border border-white/5">
-                                <h2 className="font-black flex items-center gap-2"><Icon name="bar-chart-3" className="w-5 h-5 text-indigo-400" /> 실시간 현황</h2>
-                                <button onClick={() => setView('login')} className="text-xs bg-slate-800 px-4 py-2 rounded-xl border border-slate-700">종료</button>
+                                <h2 className="font-black flex items-center gap-2 text-lg"><Icon name="bar-chart-3" className="w-5 h-5 text-indigo-400" /> 모험가 현황</h2>
+                                <button onClick={() => setView('login')} className="text-xs bg-slate-800 px-4 py-2 rounded-xl border border-white/5 font-bold hover:bg-slate-700 transition-all text-slate-400">나가기</button>
                             </div>
+                            
                             <div className="grid grid-cols-2 gap-2">
-                                <div className="bg-indigo-600 p-4 rounded-3xl text-center col-span-2 shadow-lg">
-                                    <div className="text-3xl font-black">{allUsers.length}</div>
-                                    <div className="text-[10px] font-bold opacity-70 uppercase tracking-widest">Total Adventurers</div>
+                                <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 p-5 rounded-3xl text-center col-span-2 shadow-xl shadow-indigo-600/10">
+                                    <div className="text-4xl font-black text-white">{allUsers.length}</div>
+                                    <div className="text-[10px] font-black opacity-60 uppercase tracking-widest text-indigo-100">Total Players</div>
                                 </div>
                                 {JOBS.map(job => (
                                     <div key={job.id} className="bg-slate-900 border border-white/5 p-4 rounded-3xl text-center">
-                                        <div className="text-xl font-black">{stats[job.name] || 0}</div>
-                                        <div className="text-[10px] text-slate-500 uppercase font-bold">{job.name}</div>
+                                        <div className="text-2xl font-black text-slate-100">{stats[job.name] || 0}</div>
+                                        <div className="text-[10px] text-slate-500 uppercase font-black tracking-tighter">{job.name}</div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="bg-slate-900 border border-white/5 rounded-[2rem] overflow-hidden max-h-[350px] overflow-y-auto scrollbar-hide">
-                                <table className="w-full text-sm">
-                                    <thead className="bg-slate-800 text-slate-500 text-[10px] font-black uppercase sticky top-0 border-b border-white/5">
-                                        <tr><th className="px-6 py-4 text-left">이름</th><th className="px-6 py-4 text-right">직업</th></tr>
+
+                            <div className="bg-slate-900 border border-white/5 rounded-[2rem] overflow-hidden max-h-[400px] overflow-y-auto scrollbar-hide shadow-2xl">
+                                <table className="w-full text-sm border-collapse">
+                                    <thead className="bg-slate-800/80 text-slate-400 text-[10px] font-black uppercase sticky top-0 border-b border-white/5 backdrop-blur-md">
+                                        <tr>
+                                            <th className="px-6 py-4 text-left tracking-widest">Name</th>
+                                            <th className="px-6 py-4 text-right tracking-widest">Class</th>
+                                        </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/5">
+                                    <tbody className="divide-y divide-white/5 bg-slate-900">
                                         {allUsers.length === 0 ? (
-                                            <tr><td colSpan="2" className="p-12 text-center text-slate-600 italic">데이터가 없습니다.</td></tr>
+                                            <tr><td colSpan="2" className="p-16 text-center text-slate-600 italic font-medium">등록된 정보가 없습니다.</td></tr>
                                         ) : (
                                             [...allUsers].sort((a,b) => b.timestamp - a.timestamp).map((u, i) => (
-                                                <tr key={i} className="hover:bg-white/5 transition-colors">
-                                                    <td className="px-6 py-4 font-bold">{u.nickname}</td>
+                                                <tr key={i} className="hover:bg-white/5 transition-colors group">
+                                                    <td className="px-6 py-4 font-bold text-slate-300 group-hover:text-white transition-colors">{u.nickname}</td>
                                                     <td className="px-6 py-4 text-right">
-                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold text-white shadow-sm ${JOBS.find(j => j.id === u.jobId)?.color}`}>
+                                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black text-white shadow-sm border border-white/10 ${JOBS.find(j => j.id === u.jobId)?.color}`}>
                                                             {u.jobName}
                                                         </span>
                                                     </td>
@@ -237,8 +251,13 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <p className="text-[9px] text-slate-700 text-center font-bold italic opacity-60">*데이터는 로컬 저장소(현재 기기)에 저장됩니다.</p>
                         </div>
                     )}
+                    
+                    <footer className="mt-auto pt-10 text-center text-slate-800 text-[9px] font-bold tracking-[0.4em] pb-6 uppercase opacity-40">
+                        &mdash; RPG Master Console &mdash;
+                    </footer>
                 </div>
             );
         }
